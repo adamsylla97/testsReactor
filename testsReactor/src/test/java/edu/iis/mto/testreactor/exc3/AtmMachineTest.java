@@ -48,6 +48,22 @@ public class AtmMachineTest {
     }
 
     @Test
+    public void atmMachineShouldReturnBankntosWithApropiateCurrency(){
+        Money euroBanknotes = Money.builder().withAmount(100).withCurrency(Currency.EU).build();
+        atmMachine = new AtmMachine(cardProviderService,bankService,moneyDepot);
+
+        Mockito.when(cardProviderService.authorize(card)).thenReturn(token);
+        Mockito.when(bankService.charge(authenticationToken,euroBanknotes)).thenReturn(true);
+        Mockito.when(moneyDepot.releaseBanknotes(Mockito.any())).thenReturn(true);
+
+        Payment paymentFromAtmMachine = atmMachine.withdraw(euroBanknotes,card);
+
+        Money expectedMoney = Money.builder().withCurrency(Currency.EU).build();
+
+        Assert.assertEquals(expectedMoney.getCurrency(),paymentFromAtmMachine.getValue().get(0).getCurrency());
+    }
+
+    @Test
     public void bankServiceStartTransactionMethodShouldBeCalledOnce(){
         atmMachine = new AtmMachine(cardProviderService,bankService,moneyDepot);
 
