@@ -48,7 +48,48 @@ public class AtmMachineTest {
     }
 
     @Test
-    public void moneyDepotReleaseBanknotesShouldBeCalledOnce(){
+    public void bankServiceStartTransactionMethodShouldBeCalledOnce(){
+        atmMachine = new AtmMachine(cardProviderService,bankService,moneyDepot);
+
+        Mockito.when(cardProviderService.authorize(card)).thenReturn(token);
+        Mockito.when(bankService.charge(authenticationToken,amount)).thenReturn(true);
+        Mockito.when(moneyDepot.releaseBanknotes(Mockito.any())).thenReturn(true);
+
+        Payment paymentFromAtmMachine = atmMachine.withdraw(amount,card);
+
+        Mockito.verify(bankService,Mockito.times(1)).startTransaction(authenticationToken);
+    }
+
+
+    @Test
+    public void bankServiceAbortMethodShouldntBeCalled(){
+        atmMachine = new AtmMachine(cardProviderService,bankService,moneyDepot);
+
+        Mockito.when(cardProviderService.authorize(card)).thenReturn(token);
+        Mockito.when(bankService.charge(authenticationToken,amount)).thenReturn(true);
+        Mockito.when(moneyDepot.releaseBanknotes(Mockito.any())).thenReturn(true);
+
+        Payment paymentFromAtmMachine = atmMachine.withdraw(amount,card);
+
+        Mockito.verify(bankService,Mockito.times(0)).abort(authenticationToken);
+    }
+
+
+    @Test
+    public void bankServiceCommitMethodShouldBeCalledOnce(){
+        atmMachine = new AtmMachine(cardProviderService,bankService,moneyDepot);
+
+        Mockito.when(cardProviderService.authorize(card)).thenReturn(token);
+        Mockito.when(bankService.charge(authenticationToken,amount)).thenReturn(true);
+        Mockito.when(moneyDepot.releaseBanknotes(Mockito.any())).thenReturn(true);
+
+        Payment paymentFromAtmMachine = atmMachine.withdraw(amount,card);
+
+        Mockito.verify(bankService,Mockito.times(1)).commit(authenticationToken);
+    }
+
+    @Test
+    public void moneyDepotReleaseBanknotesMethodShouldBeCalledOnce(){
         atmMachine = new AtmMachine(cardProviderService,bankService,moneyDepot);
 
         Mockito.when(cardProviderService.authorize(card)).thenReturn(token);
@@ -61,7 +102,7 @@ public class AtmMachineTest {
     }
 
     @Test
-    public void bankServiceChargeShouldBeCalledOnce(){
+    public void bankServiceChargeMethodShouldBeCalledOnce(){
         atmMachine = new AtmMachine(cardProviderService,bankService,moneyDepot);
 
         Mockito.when(cardProviderService.authorize(card)).thenReturn(token);
