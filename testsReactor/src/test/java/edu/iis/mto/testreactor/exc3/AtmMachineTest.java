@@ -47,6 +47,19 @@ public class AtmMachineTest {
 
     }
 
+    @Test (expected = WrongMoneyAmountException.class)
+    public void paymentFromAtmMachineShouldCauseWrongMoneyAmountException() {
+        atmMachine = new AtmMachine(cardProviderService,bankService,moneyDepot);
+
+        Mockito.when(cardProviderService.authorize(card)).thenReturn(token);
+        Mockito.when(bankService.charge(authenticationToken,amount)).thenReturn(true);
+        Mockito.when(moneyDepot.releaseBanknotes(Mockito.any())).thenReturn(true);
+
+        Money negativeAmount = Money.builder().withAmount(-10).withCurrency(Currency.PL).build();
+
+        Payment paymentFromAtmMachine = atmMachine.withdraw(negativeAmount,card);
+    }
+
     @Test (expected = MoneyDepotException.class)
     public void paymentFromAtmMachineShouldCauseMoneyDepotException(){
         atmMachine = new AtmMachine(cardProviderService,bankService,moneyDepot);
