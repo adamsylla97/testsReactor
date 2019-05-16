@@ -47,8 +47,19 @@ public class AtmMachineTest {
 
     }
 
+    @Test (expected = MoneyDepotException.class)
+    public void paymentFromAtmMachineShouldCauseMoneyDepotException(){
+        atmMachine = new AtmMachine(cardProviderService,bankService,moneyDepot);
+
+        Mockito.when(cardProviderService.authorize(card)).thenReturn(token);
+        Mockito.when(bankService.charge(authenticationToken,amount)).thenReturn(true);
+        Mockito.when(moneyDepot.releaseBanknotes(Mockito.any())).thenReturn(false);
+
+        Payment paymentFromAtmMachine = atmMachine.withdraw(amount,card);
+    }
+
     @Test (expected = InsufficientFundsException.class)
-    public void paymentFromArmMachineShouldCauseInsufficientFoundsException(){
+    public void paymentFromAtmMachineShouldCauseInsufficientFoundsException(){
         atmMachine = new AtmMachine(cardProviderService,bankService,moneyDepot);
 
         Mockito.when(cardProviderService.authorize(card)).thenReturn(token);
@@ -58,7 +69,7 @@ public class AtmMachineTest {
     }
 
     @Test (expected = CardAuthorizationException.class)
-    public void paymentFromArmMachineShouldCauseCardAuthorizationException(){
+    public void paymentFromAtmMachineShouldCauseCardAuthorizationException(){
         atmMachine = new AtmMachine(cardProviderService,bankService,moneyDepot);
 
         Mockito.when(cardProviderService.authorize(card)).thenReturn(emptyToken);
