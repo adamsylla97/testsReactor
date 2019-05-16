@@ -22,6 +22,8 @@ public class AtmMachineTest {
     AuthenticationToken authenticationToken;
 
     Optional<AuthenticationToken> token;
+    Optional<AuthenticationToken> emptyToken;
+    List<Banknote> banknoteList;
 
     //mocks
     CardProviderService cardProviderService;
@@ -33,27 +35,37 @@ public class AtmMachineTest {
         cardProviderService = Mockito.mock(CardProviderService.class);
         bankService = Mockito.mock(BankService.class);
         moneyDepot = Mockito.mock(MoneyDepot.class);
-    }
 
-    @Test
-    public void atmMachineShouldReturnAppropriateBankntos(){
         authenticationToken = AuthenticationToken.builder().withUserId("1").withAuthorizationCode(1234).build();
         token = Optional.of(authenticationToken);
+        emptyToken = Optional.empty();
 
         amount = Money.builder().withAmount(120).withCurrency(Currency.PL).build();
         card = Card.builder().withCardNumber("123").withPinNumber(1234).build();
 
+        banknoteList = new ArrayList<>();
+
+    }
+
+    @Test (expected = CardAuthorizationException.class)
+    public void paymentFromArmMachineShouldCauseCardAuthorizationException(){
+        atmMachine = new AtmMachine(cardProviderService,bankService,moneyDepot);
+
+        Mockito.when(cardProviderService.authorize(card)).thenReturn(emptyToken);
+
+        Payment paymentFromAtmMachine = atmMachine.withdraw(amount,card);
+    }
+
+    @Test
+    public void atmMachineShouldReturnAppropriateBankntos(){
         atmMachine = new AtmMachine(cardProviderService,bankService,moneyDepot);
 
         Mockito.when(cardProviderService.authorize(card)).thenReturn(token);
-
         Mockito.when(bankService.charge(authenticationToken,amount)).thenReturn(true);
-
         Mockito.when(moneyDepot.releaseBanknotes(Mockito.any())).thenReturn(true);
 
         Payment paymentFromAtmMachine = atmMachine.withdraw(amount,card);
 
-        List<Banknote> banknoteList = new ArrayList<>();
         banknoteList.add(Banknote.PL100);
         banknoteList.add(Banknote.PL20);
 
