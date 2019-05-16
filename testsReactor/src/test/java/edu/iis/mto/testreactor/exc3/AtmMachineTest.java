@@ -48,6 +48,19 @@ public class AtmMachineTest {
     }
 
     @Test
+    public void moneyDepotReleaseBanknotesShouldBeCalledOnce(){
+        atmMachine = new AtmMachine(cardProviderService,bankService,moneyDepot);
+
+        Mockito.when(cardProviderService.authorize(card)).thenReturn(token);
+        Mockito.when(bankService.charge(authenticationToken,amount)).thenReturn(true);
+        Mockito.when(moneyDepot.releaseBanknotes(Mockito.any())).thenReturn(true);
+
+        Payment paymentFromAtmMachine = atmMachine.withdraw(amount,card);
+
+        Mockito.verify(moneyDepot,Mockito.times(1)).releaseBanknotes(Mockito.any());
+    }
+
+    @Test
     public void bankServiceChargeShouldBeCalledOnce(){
         atmMachine = new AtmMachine(cardProviderService,bankService,moneyDepot);
 
